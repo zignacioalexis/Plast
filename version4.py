@@ -2,7 +2,7 @@ import streamlit as st
 
 
 def calcular_produccion():
-    st.title("Calculadora de Producción (216)")
+    st.title("Calculadora de Producción ( Máquina 216)")
 
     with st.expander("⚙️ Configuración de la Máquina", expanded=True):
         col1, col2 = st.columns(2)
