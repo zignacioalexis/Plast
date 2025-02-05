@@ -105,19 +105,21 @@ def render_analysis_table(turno_minutos, tiempo_efectivo, tiempo_perdido, eficie
     return html
 
 
-def render_interruptions_table(interrupciones_dict):
+def render_interruptions_table(interrupciones_dict, turno_minutos):
     """
-    Construye una tabla HTML para el detalle de interrupciones.
+    Construye una tabla HTML para el detalle de interrupciones con porcentaje del turno.
     """
     rows = ""
     for tipo, tiempo in interrupciones_dict.items():
-        rows += f"<tr><td>{tipo}</td><td>{tiempo:.2f} min</td></tr>"
+        porcentaje = (tiempo / turno_minutos) * 100 if turno_minutos > 0 else 0
+        rows += f"<tr><td>{tipo}</td><td>{tiempo:.2f} min</td><td>{porcentaje:.2f}%</td></tr>"
 
     html = f'''
     <table class="custom-table">
       <tr>
         <th>Tipo</th>
         <th>Tiempo (min)</th>
+        <th>% Turno</th>
       </tr>
       {rows}
     </table>
@@ -126,7 +128,7 @@ def render_interruptions_table(interrupciones_dict):
 
 
 def calcular_produccion():
-    st.title("🏭 Calculadora de Producción (216")
+    st.title("🏭 Calculadora de Producción (216)")
 
     with st.expander("🔧 Configuración Operativa", expanded=True):
         col1, col2 = st.columns(2)
@@ -201,7 +203,7 @@ def calcular_produccion():
         "Paradas Automáticas": tiempo_detenido_ciclos
     }
     with st.expander("🔍 Detalle de Interrupciones", expanded=False):
-        interruptions_html = render_interruptions_table(interrupciones_dict)
+        interruptions_html = render_interruptions_table(interrupciones_dict, turno_minutos)
         st.markdown(interruptions_html, unsafe_allow_html=True)
 
 
