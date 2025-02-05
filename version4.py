@@ -167,7 +167,7 @@ def calcular_produccion():
     tiempo_detenido_ciclos = tiempo_neto * (5 / 32)
 
     # Cálculo de producción
-    unidades = 50 * tiempo_efectivo
+    unidades = 47 * tiempo_efectivo
     peso_kg = unidades * 45.3 / 1000
 
     # Cálculo de eficiencia
