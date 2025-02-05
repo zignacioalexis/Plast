@@ -126,7 +126,7 @@ def render_interruptions_table(interrupciones_dict):
 
 
 def calcular_produccion():
-    st.title("🏭 Calculadora de Producción Premium")
+    st.title("🏭 Calculadora de Producción (216")
 
     with st.expander("🔧 Configuración Operativa", expanded=True):
         col1, col2 = st.columns(2)
