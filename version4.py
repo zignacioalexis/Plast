@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 # Configuración de la página
-st.set_page_config(page_title="Calculadora de Producción Premium", layout="wide")
+st.set_page_config(page_title="Calculadora de Producción", layout="wide")
 
 # CSS Premium para la aplicación
 st.markdown("""
