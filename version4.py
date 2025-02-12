@@ -85,7 +85,7 @@ def render_analysis_table(turno_minutos, tiempo_efectivo, tiempo_perdido, eficie
         <th>Valor</th>
       </tr>
       <tr>
-        <td>Tiempo Total Turno</td>
+        <td>Tiempo Total del Turno</td>
         <td>{turno_minutos:.2f} min</td>
       </tr>
       <tr>
@@ -119,7 +119,7 @@ def render_interruptions_table(interrupciones_dict, turno_minutos):
       <tr>
         <th>Tipo</th>
         <th>Tiempo (min)</th>
-        <th>% Turno</th>
+        <th>% del Turno</th>
       </tr>
       {rows}
     </table>
@@ -127,8 +127,8 @@ def render_interruptions_table(interrupciones_dict, turno_minutos):
     return html
 
 
-def calcular_produccion():
-    st.title("🏭 Calculadora de Producción (216)")
+def calcular_produccion_216():
+    st.title("🏭 Calculadora de Producción - Máquina 216")
 
     with st.expander("🔧 Configuración Operativa", expanded=True):
         col1, col2 = st.columns(2)
@@ -155,18 +155,19 @@ def calcular_produccion():
 
     # Cálculo de tiempos
     turno_minutos = turno_horas * 60
-    interrupciones_fijas = 10 + (15 if desayuno else 0) + (60 if almuerzo else 0)
-    interrupciones_variables = (cambios_producto * 15) + (cambios_cuchillo * 30) + (cambios_rollo * 4) + (
-                cambios_perforador * 10)
+    # Fijos: Calibración (10) + Comidas (15 y 60) + Otros (30)
+    interrupciones_fijas = 10 + (15 if desayuno else 0) + (60 if almuerzo else 0) + 30
+    # Variables: cambios de producto, cuchillo, rollo y perforador
+    interrupciones_variables = (cambios_producto * 15) + (cambios_cuchillo * 30) + (cambios_rollo * 4) + (cambios_perforador * 10)
     tiempo_neto = turno_minutos - (interrupciones_fijas + interrupciones_variables)
 
     if tiempo_neto <= 0:
         st.error("⛔ Error: El tiempo de interrupciones excede la duración del turno")
         return
 
-    # Ajustes por ciclos automáticos
-    tiempo_efectivo = tiempo_neto * (27 / 32)
-    tiempo_detenido_ciclos = tiempo_neto * (5 / 32)
+    # Ajuste por ciclo (27/32 efectivo, 5/32 detenciones automáticas)
+    tiempo_efectivo = tiempo_neto * (27/32)
+    tiempo_detenido_ciclos = tiempo_neto * (5/32)
 
     # Cálculo de producción
     unidades = 48 * tiempo_efectivo
@@ -185,7 +186,7 @@ def calcular_produccion():
         st.metric("Peso Total Estimado", f"{peso_kg:,.1f} kg",
                   delta=f"Rango: {peso_kg * 0.96:,.1f} - {peso_kg * 1.04:,.1f} kg")
 
-    # Tabla de Análisis de Tiempos con barra de progreso para eficiencia
+    # Tabla de Análisis de Tiempos
     st.subheader("⏳ Análisis de Tiempos")
     tiempo_perdido = turno_minutos - tiempo_efectivo
     analysis_html = render_analysis_table(turno_minutos, tiempo_efectivo, tiempo_perdido, eficiencia)
@@ -196,6 +197,7 @@ def calcular_produccion():
     interrupciones_dict = {
         "Calibración": 10,
         "Comidas": (15 if desayuno else 0) + (60 if almuerzo else 0),
+        "Otros": 30,
         "Cambios Producto": cambios_producto * 15,
         "Cambios Cuchillo": cambios_cuchillo * 30,
         "Cambios Rollo": cambios_rollo * 4,
@@ -207,5 +209,98 @@ def calcular_produccion():
         st.markdown(interruptions_html, unsafe_allow_html=True)
 
 
-if __name__ == "__main__":
-    calcular_produccion()
+def calcular_produccion_235():
+    st.title("🏭 Calculadora de Producción - Máquina 235")
+
+    with st.expander("🔧 Configuración Operativa", expanded=True):
+        col1, col2 = st.columns(2)
+        with col1:
+            turno_horas = st.number_input(
+                "Duración del Turno (horas)",
+                min_value=1.0, max_value=24.0, value=8.0, step=0.5, key="turno235"
+            )
+            desayuno = st.checkbox("Incluir desayuno (15 min)", key="desayuno235")
+            almuerzo = st.checkbox("Incluir almuerzo (60 min)", key="almuerzo235")
+        with col2:
+            rollo_opcion = st.selectbox(
+                "Tipo de rollo",
+                options=["500 unidades", "700 unidades"],
+                key="rollo_tipo"
+            )
+            cambios_rollo = st.number_input(
+                "Cantidad de cambios de rollo", min_value=0, max_value=25, value=0, step=1, key="cambiosRollos235"
+            )
+
+    # Parámetros según opción de rollo
+    if rollo_opcion == "500 unidades":
+        unidades_por_rollo = 500
+        peso_por_rollo = 1.38  # kg
+    else:
+        unidades_por_rollo = 700
+        peso_por_rollo = 1.8   # kg
+
+    # Cálculo de tiempos
+    turno_minutos = turno_horas * 60
+    # Tiempos fijos: Calibración (10) + Comidas (15 y 60) + Otros (30)
+    interrupciones_fijas = 10 + (15 if desayuno else 0) + (60 if almuerzo else 0) + 30
+    # Variable: Cambio de rollo (4 min cada)
+    interrupciones_variables = cambios_rollo * 4
+    tiempo_neto = turno_minutos - (interrupciones_fijas + interrupciones_variables)
+
+    if tiempo_neto <= 0:
+        st.error("⛔ Error: El tiempo de interrupciones excede la duración del turno")
+        return
+
+    # En la máquina 235 no hay ineficiencias de ciclo; tiempo efectivo = tiempo neto.
+    tiempo_efectivo = tiempo_neto
+
+    # Eficiencia
+    eficiencia = (tiempo_efectivo / turno_minutos) * 100
+
+    # Cálculo de producción:
+    # La máquina produce a 248 GPM (unidades por minuto). Estas unidades se agrupan en rollos.
+    total_unidades_producidas = 248 * tiempo_efectivo
+    # Se calculan los rollos (resultado en forma continua, para estimación)
+    rollos_producidos = total_unidades_producidas / unidades_por_rollo
+    peso_total = rollos_producidos * peso_por_rollo
+
+    # Resultados principales
+    st.success("📈 Resultados de Producción")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric("Rollos Estimados", f"{rollos_producidos:,.1f}",
+                  delta=f"Rango: {rollos_producidos * 0.96:,.1f} - {rollos_producidos * 1.04:,.1f}")
+    with col2:
+        st.metric("Peso Total Estimado", f"{peso_total:,.2f} kg",
+                  delta=f"Rango: {peso_total * 0.96:,.2f} - {peso_total * 1.04:,.2f} kg")
+
+    # Tabla de Análisis de Tiempos
+    st.subheader("⏳ Análisis de Tiempos")
+    tiempo_perdido = turno_minutos - tiempo_efectivo
+    analysis_html = render_analysis_table(turno_minutos, tiempo_efectivo, tiempo_perdido, eficiencia)
+    with st.expander("Ver Análisis de Tiempos", expanded=True):
+        st.markdown(analysis_html, unsafe_allow_html=True)
+
+    # Detalle de interrupciones
+    interrupciones_dict = {
+        "Calibración": 10,
+        "Comidas": (15 if desayuno else 0) + (60 if almuerzo else 0),
+        "Cambio de Rollo": cambios_rollo * 4,
+        "Otros": 30
+    }
+    with st.expander("🔍 Detalle de Interrupciones", expanded=False):
+        interruptions_html = render_interruptions_table(interrupciones_dict, turno_minutos)
+        st.markdown(interruptions_html, unsafe_allow_html=True)
+
+
+# Selección de máquina (puedes usar la barra lateral o el cuerpo principal)
+machine = st.sidebar.selectbox(
+    "Seleccione la Máquina",
+    options=["216", "235"],
+    format_func=lambda x: "Máquina 216" if x == "216" else "Máquina 235"
+)
+
+if machine == "216":
+    calcular_produccion_216()
+else:
+    calcular_produccion_235()
